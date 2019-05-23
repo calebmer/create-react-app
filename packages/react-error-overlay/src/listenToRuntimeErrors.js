@@ -41,6 +41,9 @@ export const crashWithFrames = (crash: ErrorRecord => void) => (
   error: Error,
   unhandledRejection = false
 ) => {
+  if (error.disableReactErrorOverlay) {
+    return;
+  }
   getStackFrames(error, unhandledRejection, CONTEXT_SIZE)
     .then(stackFrames => {
       if (stackFrames == null) {
