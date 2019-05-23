@@ -41,24 +41,32 @@ export const crashWithFrames = (crash: ErrorRecord => void) => (
   error: Error,
   unhandledRejection = false
 ) => {
-  if (error.disableReactErrorOverlay) {
-    return;
-  }
-  getStackFrames(error, unhandledRejection, CONTEXT_SIZE)
-    .then(stackFrames => {
-      if (stackFrames == null) {
-        return;
-      }
-      crash({
-        error,
-        unhandledRejection,
-        contextSize: CONTEXT_SIZE,
-        stackFrames,
+  // We want React error boundaries to run before we display the crash. That way
+  // they can set `disableReactErrorOverlay` to disable the error overlay.
+  //
+  // React error boundaries will run synchronously after `crashWithFrames` is
+  // called so use a microtask to schedule this code to run _after_ the
+  // remaining React code.
+  Promise.resolve().then(() => {
+    if (error.disableReactErrorOverlay) {
+      return;
+    }
+    getStackFrames(error, unhandledRejection, CONTEXT_SIZE)
+      .then(stackFrames => {
+        if (stackFrames == null) {
+          return;
+        }
+        crash({
+          error,
+          unhandledRejection,
+          contextSize: CONTEXT_SIZE,
+          stackFrames,
+        });
+      })
+      .catch(e => {
+        console.log('Could not get the stack frames of error:', e);
       });
-    })
-    .catch(e => {
-      console.log('Could not get the stack frames of error:', e);
-    });
+  });
 };
 
 export function listenToRuntimeErrors(
