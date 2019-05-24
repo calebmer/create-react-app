@@ -44,10 +44,10 @@ export const crashWithFrames = (crash: ErrorRecord => void) => (
   // We want React error boundaries to run before we display the crash. That way
   // they can set `disableReactErrorOverlay` to disable the error overlay.
   //
-  // React error boundaries will run synchronously after `crashWithFrames` is
-  // called so use a microtask to schedule this code to run _after_ the
+  // React error boundaries will run soon after `crashWithFrames` is
+  // called so use a macrotask to schedule this code to run _after_ the
   // remaining React code.
-  Promise.resolve().then(() => {
+  setTimeout(() => {
     if (error.disableReactErrorOverlay) {
       return;
     }
@@ -66,7 +66,7 @@ export const crashWithFrames = (crash: ErrorRecord => void) => (
       .catch(e => {
         console.log('Could not get the stack frames of error:', e);
       });
-  });
+  }, 0);
 };
 
 export function listenToRuntimeErrors(
