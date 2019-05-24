@@ -66,7 +66,7 @@ export const crashWithFrames = (crash: ErrorRecord => void) => (
       .catch(e => {
         console.log('Could not get the stack frames of error:', e);
       });
-  }, 0);
+  }, 50);
 };
 
 export function listenToRuntimeErrors(
